@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <title>Opening Extension App...</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #f9fafb;
+    }
+    .box {
+      text-align: center;
+      padding: 40px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      max-width: 360px;
+      width: 90%;
+    }
+    h2 { color: #e53935; margin-bottom: 8px; }
+    p  { color: #6b7280; margin-bottom: 24px; }
+    .store-btn {
+      display: inline-block;
+      background: #e53935;
+      color: white;
+      padding: 12px 28px;
+      border-radius: 24px;
+      text-decoration: none;
+      font-weight: 600;
+      margin: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Extension App</h2>
+    <p>Redirecting you to the app...</p>
+    <a class="store-btn" id="storeLink" href="https://extension-pbsweb.netlify.app">
+      Get the App
+    </a>
+  </div>
+
+  <script>
+    const ref = new URLSearchParams(window.location.search).get('ref');
+    const isAndroid = /android/i.test(navigator.userAgent);
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+    // 🔁 Update these when app is published
+    const playStore = 'https://play.google.com/store/apps/details?id=com.ozoservirandroid.app';
+    const appStore  = 'https://apps.apple.com/app/YOUR_APP_ID';
+
+    const storeLink = document.getElementById('storeLink');
+
+    if (!ref) {
+      window.location.href = 'https://extension-pbsweb.netlify.app';
+    } else if (isAndroid) {
+      storeLink.href = playStore;
+      storeLink.textContent = 'Get on Google Play';
+      const fallback = encodeURIComponent(playStore);
+      window.location.href =
+        `intent://share?ref=${ref}#Intent;scheme=extensionapp;package=com.yourapp.package;S.browser_fallback_url=${fallback};end`;
+    } else if (isIOS) {
+      storeLink.href = appStore;
+      storeLink.textContent = 'Get on App Store';
+      window.location.href = `extensionapp://share?ref=${ref}`;
+      setTimeout(() => { window.location.href = appStore; }, 1500);
+    } else {
+      // Desktop — just go to homepage
+      window.location.href = 'https://extension-pbsweb.netlify.app';
+    }
+  </script>
+</body>
+</html>

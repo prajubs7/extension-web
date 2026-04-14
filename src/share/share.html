@@ -23,8 +23,9 @@
       max-width: 360px;
       width: 90%;
     }
-    h2 { color: #e53935; margin-bottom: 8px; }
-    p  { color: #6b7280; margin-bottom: 24px; }
+    .icon { font-size: 48px; margin-bottom: 12px; }
+    h2 { color: #e53935; margin-bottom: 8px; font-size: 20px; }
+    p  { color: #6b7280; margin-bottom: 24px; font-size: 14px; }
     .store-btn {
       display: inline-block;
       background: #e53935;
@@ -33,46 +34,97 @@
       border-radius: 24px;
       text-decoration: none;
       font-weight: 600;
+      font-size: 14px;
       margin: 6px;
+      transition: opacity 0.2s;
+    }
+    .store-btn:hover { opacity: 0.85; }
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #e53935;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin {
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
 <body>
   <div class="box">
+    <div class="icon">🔗</div>
     <h2>Extension App</h2>
-    <p>Redirecting you to the app...</p>
+    <div class="spinner" id="spinner"></div>
+    <p id="statusText">Redirecting you to the app...</p>
     <a class="store-btn" id="storeLink" href="https://extension-pbsweb.netlify.app">
       Get the App
     </a>
   </div>
 
   <script>
-    const ref = new URLSearchParams(window.location.search).get('ref');
-    const isAndroid = /android/i.test(navigator.userAgent);
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const ref        = new URLSearchParams(window.location.search).get('ref');
+    const isAndroid  = /android/i.test(navigator.userAgent);
+    const isIOS      = /iphone|ipad|ipod/i.test(navigator.userAgent);
 
-    // 🔁 Update these when app is published
-    const playStore = 'https://play.google.com/store/apps/details?id=com.ozoservirandroid.app';
-    const appStore  = 'https://apps.apple.com/app/YOUR_APP_ID';
+    // ✅ Single source of truth — update only here
+    const PACKAGE_NAME = 'com.shareimpl';
+    const WEBSITE      = 'https://extension-pbsweb.netlify.app';
+    const PLAY_STORE   = `https://play.google.com/store/apps/details?id=${PACKAGE_NAME}`;
+    const APP_STORE    = 'https://apps.apple.com/app/YOUR_APP_ID'; // update when published
 
-    const storeLink = document.getElementById('storeLink');
+    const storeLink  = document.getElementById('storeLink');
+    const statusText = document.getElementById('statusText');
+    const spinner    = document.getElementById('spinner');
 
+    function hideSpinner() {
+      spinner.style.display = 'none';
+    }
+
+    // No ref param — send to homepage
     if (!ref) {
-      window.location.href = 'https://extension-pbsweb.netlify.app';
+      window.location.href = WEBSITE;
+
     } else if (isAndroid) {
-      storeLink.href = playStore;
+      storeLink.href        = PLAY_STORE;
       storeLink.textContent = 'Get on Google Play';
-      const fallback = encodeURIComponent(playStore);
+      statusText.textContent = 'Opening app...';
+
+      // Try Android App Links (intent://) — falls back to Play Store if not installed
+      const fallback = encodeURIComponent(PLAY_STORE);
       window.location.href =
-        `intent://share?ref=${ref}#Intent;scheme=extensionapp;package=com.yourapp.package;S.browser_fallback_url=${fallback};end`;
+        `intent://share?ref=${ref}#Intent;scheme=extensionapp;package=${PACKAGE_NAME};S.browser_fallback_url=${fallback};end`;
+
+      // If intent didn't work after 2s, show the button
+      setTimeout(() => {
+        hideSpinner();
+        statusText.textContent = 'App not found. Get it below:';
+      }, 2000);
+
     } else if (isIOS) {
-      storeLink.href = appStore;
+      storeLink.href        = APP_STORE;
       storeLink.textContent = 'Get on App Store';
+      statusText.textContent = 'Opening app...';
+
+      // Try custom scheme — if app installed it will open
       window.location.href = `extensionapp://share?ref=${ref}`;
-      setTimeout(() => { window.location.href = appStore; }, 1500);
+
+      // Fallback to App Store after 1.5s if app not installed
+      setTimeout(() => {
+        hideSpinner();
+        statusText.textContent = 'App not found. Get it below:';
+        window.location.href = APP_STORE;
+      }, 1500);
+
     } else {
-      // Desktop — just go to homepage
-      window.location.href = 'https://extension-pbsweb.netlify.app';
+      // Desktop — go to homepage
+      hideSpinner();
+      statusText.textContent = 'Open this link on your mobile device.';
+      storeLink.href        = WEBSITE;
+      storeLink.textContent = 'Visit Website';
     }
   </script>
 </body>

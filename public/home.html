@@ -1,11 +1,16 @@
+<!DOCTYPE html>
 <html>
   <head>
-    <meta http-equiv="refresh" content="0;url=myapp://" />
+    <meta charset="UTF-8" />
+    <title>Opening App...</title>
   </head>
   <body>
     <script>
-      window.location = "myapp://";
+      // Small delay to let browser process the redirect
+      setTimeout(function () {
+        window.location.href = "myapp://";
+      }, 300);
     </script>
-    <p>Opening app... <a href="myapp://">Click here</a> if it doesn't open.</p>
+    <p>Opening app...</p>
   </body>
 </html>

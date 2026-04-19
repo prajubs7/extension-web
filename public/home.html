@@ -6,10 +6,9 @@
   </head>
   <body>
     <script>
-      // Small delay to let browser process the redirect
       setTimeout(function () {
-        window.location.href = "myapp://";
-      }, 300);
+        window.location.href = "myapp://home";  // ← matches scheme + host
+      }, 500);
     </script>
     <p>Opening app...</p>
   </body>
